@@ -180,6 +180,7 @@ class Phenny(irc.Bot):
             s.args = args
             s.admin = origin.nick in self.config.admins
             s.owner = origin.nick == self.config.owner
+            s.weather_API = self.config.wunderground_key
             return s
 
       return CommandInput(text, origin, bytes, match, event, args)
