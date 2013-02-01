@@ -5,6 +5,8 @@ Copyright 2008, Sean B. Palmer, inamidst.com
 Licensed under the Eiffel Forum License 2.
 
 http://inamidst.com/phenny/
+
+Rewrite: Kyle Fitzsimmons 2013, kylefitz.com
 """
 
 import urllib2
@@ -44,6 +46,8 @@ class CurrentConditions(object):
 
 
 def get_weather(phenny, input):
+	""".w zipcode - Fetches the weather report for the given zipcode (postal code; city, 
+		state/country)"""
 	# remove all whitespace from geographic identifier (zip, postal code, city)
 	geolookup = ''.join(input.group(2).split())
 	# create google weather api url
@@ -79,11 +83,9 @@ def get_weather(phenny, input):
 		phenny.say("Non-specific JSON received, please retry the search.")
 
 
-	#return the weather condition
-	# phenny.reply(weather)
-get_weather.commands = ['w']
-get_weather.name = 'w'
-get_weather.example = '.w zipcode'
+get_weather.commands = ['w', 'weather']
+get_weather.name = 'weather'
+get_weather.example = '.w Montreal, Canada'
 
 
 if __name__ == "__main__":

@@ -151,7 +151,7 @@ class Bot(asynchat.async_chat):
 
       # Loop detection
       messages = [m[1] for m in self.stack[-8:]]
-      if messages.count(text) >= 5: 
+      if messages.count(text) >= 50: 
          text = '...'
          if messages.count('...') >= 3: 
             self.sending.release()

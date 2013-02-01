@@ -1,0 +1,76 @@
+#!/usr/bin/env python
+"""
+rottentomatoes.py - Phenny RottenTomatoes.com Module
+Copyright 2008, Sean B. Palmer, inamidst.com
+Licensed under the Eiffel Forum License 2.
+
+http://inamidst.com/phenny/
+
+Kyle Fitzsimmons 2013, kylefitz.com
+"""
+
+import threading
+from socket import *
+from Queue import Queue
+
+# http://stackoverflow.com/questions/6487772/simple-telnet-chat-server-in-python
+class ChatServer(threading.Thread):
+	def __init__(self, (socket, address), clients, lock, q):
+		threading.Thread.__init__(self)
+		self.socket = socket
+		self.address = address
+		self.clients = clients
+		self.lock = lock
+		self.q = q
+
+	def run(self):
+		self.lock.acquire()
+		self.clients.append(self)
+		self.lock.release()
+		print '%s:%s connected.' % self.address
+		while True:
+			data = self.socket.recv(1024)
+			if not data:
+				break
+			print data
+			for c in self.clients:
+				c.socket.send(data)
+				self.q.put(data)
+		self.socket.close()
+		print '%s:%s disconnect.' % self.address
+		self.lock.acquire()
+		self.clients.remove(self)
+		self.lock.release()
+		print "exit run"
+
+def telnet(phenny, input):
+	""" Telnet interface to allow messages from other programs or shell scripts """
+	HOST = ''
+	PORT = 5656
+	serv = socket(AF_INET, SOCK_STREAM)
+	try:
+		serv.bind((HOST, PORT))
+	except:
+		phenny.say("Telnet already running.")
+	serv.listen(5)
+
+	clients = []
+	lock = threading.Lock()
+	message_queue = Queue()
+
+	
+
+	server_session = ChatServer(serv.accept(), clients, lock, message_queue).start()
+	while True:
+		if not message_queue.empty():
+			message = message_queue.get()
+			phenny.say(message)
+
+telnet.commands = ['tel']
+telnet.name = 'telnet'
+telnet.priority = 'low'
+
+
+
+if __name__ == "__main__":
+    print __doc__.strip()
