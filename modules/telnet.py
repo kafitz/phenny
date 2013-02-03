@@ -17,17 +17,17 @@ class Relay(Protocol):
         """
         Given data, relay to phenny for processing
         """
-        self.factory.phenny.msg(self.output_chan, str(data))
+        self.factory.phenny.msg(self.factory.output_chan, str(data))
 
 class RelayFactory(Factory):
     protocol = Relay
 
     def __init__(self, phenny, input):
         self.phenny = phenny
-        self.output_chan = input.config.torrent_chan
+        self.output_chan = input.torrent_chan
 
 def telnet(phenny, input): 
-    factory = RelayFactory(phenny)
+    factory = RelayFactory(phenny, input)
     reactor.listenTCP(47974, factory, interface="localhost")
     # Suppress twisted catches like ctrl-c since not being run in main (phenny) thread
     reactor.run(installSignalHandlers=0)

@@ -12,8 +12,9 @@ Rewrite: Kyle Fitzsimmons 2013, kylefitz.com
 import urllib2
 import simplejson as json
 
-class CurrentConditions(object):
-	''' Parser and container for JSON data '''
+class CurrentConditions:
+	"""Parser and container for JSON data
+	"""
 	def __init__(self, webpage_object):
 		data = json.load(webpage_object)
 		current_observation = data['current_observation']
@@ -47,17 +48,18 @@ class CurrentConditions(object):
 
 def get_weather(phenny, input):
 	""".w zipcode - Fetches the weather report for the given zipcode (postal code; city, 
-		state/country)"""
+		state/country)
+	"""
 	# remove all whitespace from geographic identifier (zip, postal code, city)
 	geolookup = ''.join(input.group(2).split())
 	# create google weather api url
 	url = "http://api.wunderground.com/api/" + input.weather_API + \
 			"/geolookup/conditions/q/" + geolookup + ".json"
 
+	opener = urllib2.build_opener()
 	try:
 		# open wunderground api url
 		req = urllib2.Request(url)
-		opener = urllib2.build_opener()
 		webpage_object = opener.open(req)
 	except:
 		# if there was an error opening the url, return
