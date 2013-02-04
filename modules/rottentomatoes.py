@@ -6,7 +6,7 @@ Licensed under the Eiffel Forum License 2.
 
 http://inamidst.com/phenny/
 
-Kyle Fitzsimmons 2013, kylefitz.com
+Kyle Fitzsimmons 2013, http://kylefitz.com
 """
 
 from urllib import urlencode
@@ -41,15 +41,15 @@ class JSONparser:
 			else:
 				setattr(JSONparser, data_category, category_values)
 
+
 # Based off https://github.com/zachwill/rottentomatoes/blob/master/rottentomatoes/rottentomatoes.py
 def rottentomatoes(phenny, input, **kwargs):
 	""".rt movie_name - Fetches info from rottentomatoes API about the given movie
 	"""
 	base_url = 'http://api.rottentomatoes.com/api/public/v%s/' % input.rottentomatoes_API_version
-	# lists_url = base_url + 'lists'
 	movie_url = base_url + 'movies'
 	
-	# Find the movie: create a list of url search string elements
+	# Find the movie on rt: create a list of the url search string elements
 	search_url = [movie_url, '?']
 	movie_name = input[4:]
 	kwargs.update({'apikey': input.rottentomatoes_API, 'q': movie_name})
@@ -67,7 +67,7 @@ def rottentomatoes(phenny, input, **kwargs):
 		movie_data = JSONparser(JSON_movie_info)
 		print dir(movie_data)
 
-		# For some reason, runtime seems to only be returned from the search results list
+		# For some reason, runtime seems to only be returned from the original search results JSON
 		# so it gets explicitly set here
 		runtime = self_json_url = rt_search_json['movies'][0]['runtime']
 		movie_data.runtime = DATA_FORMAT + str(runtime) + DATA_FORMAT
@@ -90,22 +90,20 @@ def rottentomatoes(phenny, input, **kwargs):
 				dict_element = DATA_FORMAT + str(true_dict[key]) + DATA_FORMAT
 			return dict_element
 
-		# Strip premature mirc color tag on IMDb string
+		# Strip premature mirc color tag on IMDb string (displayed as hotlink so unneeded anyway)
 		imdb_id = movie_data.alternate_ids_imdb[4:-3]
-		imdb_url = DATA_FORMAT + "http://www.imdb.com/title/tt" + imdb_id + DATA_FORMAT
+		imdb_url = "http://www.imdb.com/title/tt" + imdb_id
 
 		# # Format the IRC response
 		tf = TAG_FORMAT
 		one = SCRIPT_HEADER + tf + "Title: " + movie_data.title + tf + " Runtime: " + movie_data.runtime
-		two = tf + " Release date: " + movie_data.release_dates_theater + tf + " Genre: " + list_to_str(movie_data.genres)
+		two = tf + " Release date: " + movie_data.release_dates_theater
 		three = tf + " MPAA rating: " + movie_data.mpaa_rating + tf + " Director: " + dict_entry(movie_data.abridged_directors)
 		four = tf + " Critic score: " + movie_data.ratings_critics_score + tf + " Audience score: " + movie_data.ratings_audience_score 
 		five = tf + " Link: " + movie_data.links_alternate + tf + " IMDb: " + imdb_url
 
 		phenny_output = one + two + three + four + five
 		phenny.say(phenny_output)
-
-
 rottentomatoes.commands = ['rt']
 rottentomatoes.name = 'rt'
 rottentomatoes.example = '.rt Finding Nemo'
