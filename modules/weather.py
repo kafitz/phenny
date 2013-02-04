@@ -57,7 +57,6 @@ def get_weather(phenny, input):
 		# For each region (city, state, country) in list, substitute a correctly encoded URL string
 		# utf-8 must be specified since google can return unicode place names
 		place_list = [quote(region_name.strip().encode('utf-8')) for region_name in place_list]
-		debug_str = ", ".join(place_list)
 		# Manually adjust for wunderground's inadequacies
 		if len(place_list) > 2:
 			# Wunderground fails if USA is on the end of US address or then otherwise if another
@@ -67,8 +66,7 @@ def get_weather(phenny, input):
 			else:
 				place_list.pop(1)
 		place_url = ",".join(place_list)
-		print latlng_tuple
-		return place_url, latlng_tuple, debug_str
+		return place_url, latlng_tuple
 
 	def fetch_json(url):
 		# open wunderground api url
@@ -94,39 +92,25 @@ def get_weather(phenny, input):
 		phenny.say(forecast_text)
 		return
 
+	debug_str = str(input)
 
-	# create wunderground weather api url from google maps (since wundergrounds API geocode is rather poor)
-	place_url, latlng_tuple, debug_str = gcode(input)
-	base_url = "http://api.wunderground.com/api/%s/geolookup/conditions/q/" % input.weather_API
-	json_file = place_url + ".json"
-	search_url = base_url + json_file	
 	try:
-		json_object = fetch_json(search_url)
-		output_results(phenny, json_object)
-	except:
-		# Say the closest found results to help user debug search input if possible
+		# create wunderground weather api url from google maps (since wundergrounds API geocode is rather poor)
+		place_url, latlng_tuple = gcode(input)
 		try:
-			search_url = base_url + str(latlng_tuple[0]) + "," + str(latlng_tuple[1]) + ".json"
+			base_url = "http://api.wunderground.com/api/%s/geolookup/conditions/q/" % input.weather_API
+			json_file = place_url + ".json"
+			search_url = base_url + json_file	
 			json_object = fetch_json(search_url)
 			output_results(phenny, json_object)
 		except:
-			if "," in place_url:
-				print "Search string: %s" % debug_str
-				place_list = place_url.split(",")
-				city_name = place_list[0]
-				search_url = base_url + city_name + ".json"
-				try:
-					closest_matches = ""
-					json_object = fetch_json(search_url)
-					search_results = json.load(json_object)
-					for result in search_results['response']['results']:
-						say_str = str(result['city']) + ", " + str(result['state']) + ", " + str(result['country'])
-						closest_matches = closest_matches + say_str + " / "
-					closest_matches = closest_matches[:-2]
-					phenny.say("Could not find results for %s. Found results instead for: " % debug_str + closest_matches)
-				except: pass
-			else:
-				pass
+			try:
+				search_url = base_url + str(latlng_tuple[0]) + "," + str(latlng_tuple[1]) + ".json"
+				json_object = fetch_json(search_url)
+				output_results(phenny, json_object)
+			except: raise # Nothing has worked, give up.
+	except geocoders.google.GQueryError:
+		phenny.say('Could not find results for "%s", please reword the search and try again.' % debug_str[3:])
 get_weather.commands = ['w', 'weather']
 get_weather.name = 'weather'
 get_weather.example = '.w Montreal, Canada'
