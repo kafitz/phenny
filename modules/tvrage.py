@@ -8,9 +8,8 @@ from urllib import quote
 import urllib2
 
 # Set tag colors (mirc colors with \x tag - e.g., \x01[,00] for black text on white bg)
-SCRIPT_HEADER = "\x0302TV: \x0301"
 TAG_FORMAT = "\x0302" # color of the "category_name: " tag - e.g., "Show name: "
-DATA_FORMAT = "\x02\x0301" # bold + color of the tv informator
+DATA_FORMAT = "\x02" # bold + color of the tv informator
 BULLET = u"\u2022" # bullet point text divider
 
 class TVData:
@@ -66,7 +65,7 @@ def tvrage(phenny, input):
 
 		# --Phenny IRC output--
 		try:
-			show_name = tv_data.ShowName[0]
+			show_name = df(tv_data.ShowName[0])
 		except TypeError:
 			phenny.say("Couldn't find show on TVRage, please try again.")
 			show_name = None
@@ -80,14 +79,15 @@ def tvrage(phenny, input):
 		airtime = df(tv_data.Airtime[0][-8:]) if tv_data.Airtime else ""
 
 		tf = TAG_FORMAT
+		et = "\x03" # End tag
 		if show_name:
-			one = tf + "Show: " + df(show_name) + DATA_FORMAT + " (" + premiered + ") " + DATA_FORMAT + BULLET + tf + " Status: " + status
-			two = " " + BULLET + " " + tf + "Previous Ep: " + latest_ep_id + " on " + latest_ep_date + " "
+			one = tf + "Show: " + et + show_name + " (" + premiered + ") " + BULLET + tf + " Status: " + et + status
+			two = " " + BULLET + " " + tf + "Previous Ep: " + et + latest_ep_id + " on " + latest_ep_date + " "
 			if next_ep_id:
-				next_ep = BULLET + tf + " Next Ep: " + next_ep_id + " on " + next_ep_date + " at " + airtime
+				next_ep = BULLET + tf + " Next Ep: " + et + next_ep_id + " on " + next_ep_date + " at " + airtime
 				phenny_output = one + two + next_ep
 			elif ended_date:
-				ended = " " + BULLET + tf + " Ended on: " + ended_date
+				ended = " " + BULLET + tf + " Ended on: " + et + ended_date
 				phenny_output = one + ended
 			else:
 				phenny_output = one + two
