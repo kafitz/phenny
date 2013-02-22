@@ -1,7 +1,0 @@
-
-*.pyc
-
-.DS_Store
-twisted
-simplejson
-geopy

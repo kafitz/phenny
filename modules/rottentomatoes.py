@@ -65,18 +65,11 @@ def rottentomatoes(phenny, input, **kwargs):
 		self_url = self_json_url + "?" + urlencode({'apikey': input.rottentomatoes_API})
 		JSON_movie_info = json.loads(urlopen(self_url).read())
 		movie_data = JSONparser(JSON_movie_info)
-		print dir(movie_data)
 
 		# For some reason, runtime seems to only be returned from the original search results JSON
 		# so it gets explicitly set here
-		runtime = self_json_url = rt_search_json['movies'][0]['runtime']
+		runtime = rt_search_json['movies'][0]['runtime']
 		movie_data.runtime = DATA_FORMAT + str(runtime) + DATA_FORMAT
-
-		def list_to_str(list_name):
-			return_str = str(DATA_FORMAT)
-			list_string = ", ".join(list_name)
-			return_str = return_str + list_string + DATA_FORMAT
-			return return_str
 
 		def dict_entry(dict_name):
 			# For extracting the string of a single entry dict or list of a dict
