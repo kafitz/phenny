@@ -63,8 +63,8 @@ def get_weather(phenny, input):
 		state/country)
 	"""
 	import wunderground
-
-	api_key = input.weather_API
+	
+	report_type = 'conditions'
 
 	unicode_input = unicode(input)
 	if unicode_input[1:8] == 'weather':
@@ -72,10 +72,10 @@ def get_weather(phenny, input):
 	elif unicode_input[1:3] == 'w ':
 		location_str = unicode_input[3:]
 	try:
-		json_data = wunderground.format_json(phenny, location_str, api_key)
+		json_data = wunderground.format_json(phenny, location_str, input.weather_API, report_type)
 		output_results(phenny, json_data)
-	# except geocoders.google.GQueryError:
-	except:
+	except Exception, e:
+		print e
 		phenny.say('Could not find results for "%s", please reword the search and try again.' % location_str)
 get_weather.commands = ['w', 'weather']
 get_weather.name = 'weather'

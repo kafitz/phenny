@@ -41,11 +41,11 @@ def fetch_json(url):
 	json_object = opener.open(req)
 	return json_object
 
-def format_json(phenny, location_str, api_key):
+def format_json(phenny, location_str, api_key, report):
 	# create wunderground weather api url from google maps (since wundergrounds API geocode is rather poor)
 	place_url, latlng_tuple = gcode(phenny, location_str)
 
-	base_url = "http://api.wunderground.com/api/%s/geolookup/conditions/q/" % api_key
+	base_url = "http://api.wunderground.com/api/%s/geolookup/%s/q/" % (api_key, report)
 	json_file = place_url + ".json"
 	search_url = base_url + json_file	
 	json_object = fetch_json(search_url)

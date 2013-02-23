@@ -126,6 +126,30 @@ class Bot(asynchat.async_chat):
    def dispatch(self, origin, args): 
       pass
 
+   def me(self, recipient, text):
+      self.sending.acquire()
+      if isinstance(text, unicode):
+         try: text = text.encode('utf-8')
+         except UnicodeEncodeError, e:
+            text = e.__class__ + ': ' + str(e)
+      if isinstance(recipient, unicode):
+         try: recipient = recipient.encode('utf-8')
+         except UnicodeEncodeError, e:
+            return
+
+      try: 
+         if text is not None:
+            # 510 because CR and LF count too, as nyuszika7h points out
+            self.push('PRIVMSG ' + recipient + ' :\001ACTION ' + text + '\001\r\n')
+         else: print "no me text."
+      except IndexError: 
+         pass
+      self.stack.append((time.time(), text))
+      self.stack = self.stack[-10:]
+
+      self.sending.release()
+
+
    def msg(self, recipient, text): 
       self.sending.acquire()
 
