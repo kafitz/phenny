@@ -19,6 +19,7 @@ permitted provided that the following conditions are met:
 [18:03] [Notice] -unobot- Next: hatcher (5 cards) - Lako (2 cards)
 """
 
+import time
 import re
 import random
 from datetime import datetime, timedelta
@@ -54,7 +55,7 @@ STRINGS = {
     'UNO': 'UNO! %s has ONE card left!',
     'WIN': 'We have a winner! %s!!!! This game took %s',
     'DRAWN_ALREADY': 'You\'ve already drawn, either .pass or .play!',
-    'DRAWS': '%s draws a card',
+    'DRAWS': '%s draws a card.',
     'DRAWN_CARD': 'Drawn card: %s',
     'DRAW_FIRST': '%s, you need to draw first!',
     'PASSED': '%s passed!',
@@ -157,6 +158,7 @@ class UnoBot:
             phenny.msg(CHANNEL, STRINGS['NOT_STARTED'])
 
     def deal(self, phenny, input):
+        botOn = False
         nickk = (input.nick).lower()
         if not self.game_on:
             phenny.msg(CHANNEL, STRINGS['NOT_STARTED'])
@@ -169,6 +171,7 @@ class UnoBot:
             return
         if len(self.players) < 2:
             self.join_uno(phenny, input, 'bot')
+            botOn = True
         self.startTime = datetime.now()
         self.lastActive = datetime.now()
         self.deck = self.createnewdeck()
@@ -181,8 +184,12 @@ class UnoBot:
             self.deck.append(self.topCard)
             random.shuffle(self.deck)
             self.topCard = self.getCard(phenny)
-        # Randomize the starting player by finding a valid random index to be called by self.playerOrder list
         end_index = len(self.players.keys()) - 1
+        # Notice everyone their cards to start (unless bot is on)
+        if botOn is False:
+            for player in range(0, end_index):
+                phenny.notice(self.playerOrder[player], STRINGS['YOUR_CARDS'] % self.renderCards(self.playerOrder[player], self.players[self.playerOrder[player]], 0))
+        # Randomize the starting player by finding a valid random index to be called by self.playerOrder list
         self.currentPlayer = random.randint(0, end_index)
         self.cardPlayed(phenny, self.topCard)
         self.showOnTurn(phenny, input)
@@ -355,7 +362,6 @@ class UnoBot:
             yellows = []
             wilds = []
             colors = []
-            print "In loop..."
             card_list = self.players[nickk]
             for card in card_list:
                 color = card[0]
@@ -385,7 +391,9 @@ class UnoBot:
                 number_matches = True
             # Function to select only the needed color list of cards
             search_list = self.whichColors(blues, greens, reds, yellows, tc_color)
-            print "Matching color list of numbers in hand: ", search_list
+            
+            # print card_list
+            # print "Matching color list of numbers in hand: ", search_list
 
             # Determine how to play next card
             # (if top card matches both a color or number held in hand)
@@ -398,44 +406,67 @@ class UnoBot:
                     for card in card_list:
                         if card[1:] == tc_number:
                             playcard = card
+                            self.drawn = False
                             break
+                    break
                 else: # Play by color
                     print "Coin flip: play by color"
                     playcard = self.chooseHighestColorCard(phenny, search_list)
+                    self.drawn = False
                     break
             elif color_matches == True and number_matches == False:
                 print "Color match: ", color_matches, "/ Number match: ", number_matches
                 playcard = self.chooseHighestColorCard(phenny, search_list)
+                self.drawn = False
                 break
             elif color_matches == False and number_matches == True:
                 print "Color match: ", color_matches, "/ Number match: ", number_matches
                 for card in card_list:
-                    print tc_number, card
-                    print card[1:]
-                    if card[1:] == tc_number:
+                    if str(card[1:]) == str(tc_number):
                         playcard = card
+                        self.drawn = False
                         break
+                break
             else: # Nothing matches; draw
-                if self.drawn is False:
+                if wilds:
+                    color_list = []
+                    if reds:
+                        color_list.append('R')
+                    if blues:
+                        color_list.append('B')
+                    if greens:
+                        color_list.append('G')
+                    if yellows:
+                        color_list.append('Y')
+                    if color_list is None:
+                        color_list = ['R', 'B', 'G', 'Y']
+                    wild_color = random.choice(color_list)
+                    print "wild color choice: " + str(wild_color)
+                    playcard = random.choice(wilds)
+                    break
+                elif self.drawn is False:
                     print "Color match: ", color_matches, "/ Number match: ", number_matches
                     c = self.getCard(phenny)
                     print "Drawing card... ", c
                     self.players[self.playerOrder[self.currentPlayer]].append(c)
                     self.lastActive = datetime.now()
                     self.drawn = True
+
                 elif self.drawn is True:
                     print "No matching card drawn, passing..."
                     break
 
         if self.drawn is False:
-            # print self.players[self.playerOrder[self.currentPlayer]] # Unobot's hand debug
-            # playcard += "\x03" # Escape the color code for nicer output formatting
             self.players[self.playerOrder[self.currentPlayer]].remove(playcard)
+            if playcard[0] == 'W':
+                playcard = playcard + wild_color
             phenny.say(STRINGS['UNOBOT_PLAYED'] % (nickk, self.renderCards(None, playcard, 1)))
             self.incPlayer()
             self.cardPlayed(phenny, playcard)
         elif self.drawn is True:
             self.incPlayer()
+            phenny.say(STRINGS['DRAWS'] % nickk)
+            time.sleep(0.75)
             phenny.say('%s passes to %s.' % (nickk, self.playerOrder[self.currentPlayer]))
         self.drawn = False
         self.showOnTurn(phenny)
@@ -506,14 +537,8 @@ class UnoBot:
         
         def color_processor(c):
             t = '\x03'
-            if c[0] == ['W']:
-                sp = str()
-                if not is_chan and self.players_pce.get(nickk, 0):
-                    sp = ' '
-                t += '15,01[' + c + ']' + sp
-                # self.ret.append(t)
-            # if c[0] == 'W':
-            #     c = c[-1] + '*'
+            if c[0] == 'W':
+                t += '15,01'
             elif c[0] == 'B':
                 t += '00,02'
             elif c[0] == 'Y':
@@ -553,7 +578,7 @@ class UnoBot:
             phenny.msg(CHANNEL, STRINGS['D2'] % self.playerOrder[self.currentPlayer])
             z = [self.getCard(phenny), self.getCard(phenny)]
             phenny.notice(self.playerOrder[self.currentPlayer], STRINGS['CARDS'] % self.renderCards(self.playerOrder[self.currentPlayer], z, 0))
-            self.players[self.playerOrder[self.currentPlayer]].extend (z)
+            self.players[self.playerOrder[self.currentPlayer]].extend(z)
             self.incPlayer()
         elif card[:2] == 'WD':
             phenny.msg(CHANNEL, STRINGS['WD4'] % self.playerOrder[self.currentPlayer])
@@ -572,6 +597,10 @@ class UnoBot:
                 self.incPlayer()
             else:
                 self.incPlayer()
+
+        if card[0] == 'W':
+            new_card = str(card[-1]) + '*'
+            card = new_card
         self.topCard = card
 
     def gameEnded(self, phenny, winner):

@@ -9,9 +9,11 @@ http://inamidst.com/phenny/
 Kyle Fitzsimmons 2013, http://kylefitz.com/
 """
 
+import time
+
 class Forecast:
 	def __init__(self, json_data):
-		city = str(json_data['location']['city'])
+		self.city = str(json_data['location']['city'])
 		try: state = str(json_data['location']['state'])
 		except: pass
 		country_name = str(json_data['location']['country_name'])
@@ -46,15 +48,16 @@ class Forecast:
 		self.period2_winddir = str(self.forecast[1]['avewind']['dir'])
 
 		if state:
-			self.location = city + ", " + state
+			self.location = self.city + ", " + state
 		else:
-			self.location = city + ", " + country_name
+			self.location = self.city + ", " + country_name
 
 		
 def output_results(phenny, json_data):
 	reading = Forecast(json_data)
-	forecast1_text_pt1 = "Forecast for " + "\x02" + reading.location + "\x02 at " + \
-						reading.period1_date + ". " + reading.period1_conditions + ". " + \
+	# FORECAST DAY 1
+	forecast1_text_pt1 = "Forecast for " + "\x02" + reading.location + "\x02. " + \
+						"Today: " + reading.period1_conditions + ". " + \
 						"Highs of " + reading.period1_highf + "F/" + \
 						reading.period1_highc + "C, lows of " + \
 						reading.period1_lowf + "F/" + reading.period1_lowc + "C. " + \
@@ -67,7 +70,8 @@ def output_results(phenny, json_data):
 	else:
 		forecast1_text = forecast1_text_pt1 + forecast1_text_pt2
 
-	forecast2_text_pt1 = "Forecast -- " + reading.period2_date + ": " + reading.period2_conditions + ". " + \
+	# FORECAST DAY 2
+	forecast2_text_pt1 = reading.city + " tomorrow: " + reading.period2_conditions + ". " + \
 						"Highs of " + reading.period2_highf + "F/" + \
 						reading.period2_highc + "C, lows of " + \
 						reading.period2_lowf + "F/" + reading.period2_lowc + "C. " + \
@@ -82,6 +86,7 @@ def output_results(phenny, json_data):
 		forecast2_text = forecast2_text_pt1 + forecast2_text_pt2
 
 	phenny.say(forecast1_text)
+	time.sleep(.8)
 	phenny.say(forecast2_text) # Two forecasts 24-hr apart
 	return
 

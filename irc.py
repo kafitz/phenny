@@ -163,11 +163,11 @@ class Bot(asynchat.async_chat):
          except UnicodeEncodeError, e: 
             return
 
-      # No messages within the last 3 seconds? Go ahead!
+      # No messages within the last 1 second? Go ahead!
       # Otherwise, wait so it's been at least 0.8 seconds + penalty
       if self.stack: 
          elapsed = time.time() - self.stack[-1][0]
-         if elapsed < 3: 
+         if elapsed < 0.7: 
             penalty = float(max(0, len(text) - 50)) / 70
             wait = 0.8 + penalty
             if elapsed < wait: 

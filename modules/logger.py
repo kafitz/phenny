@@ -8,7 +8,7 @@ http://inamidst.com/phenny/
 """
 
 def log(phenny, input):
-	print input.sender + " <" + input.nick + "> " + input + "\n"
+	print input.sender + " <" + input.nick + "> " + input.rstrip("\r\n")
 log.rule = r'(?i).*'
 log.priority = 'high'
 
