@@ -443,6 +443,10 @@ class UnoBot:
                     wild_color = random.choice(color_list)
                     print "wild color choice: " + str(wild_color)
                     playcard = random.choice(wilds)
+                    self.drawn = False
+                    break
+                elif self.drawn is True:
+                    print "No matching card drawn, passing..."
                     break
                 elif self.drawn is False:
                     print "Color match: ", color_matches, "/ Number match: ", number_matches
@@ -450,23 +454,26 @@ class UnoBot:
                     print "Drawing card... ", c
                     self.players[self.playerOrder[self.currentPlayer]].append(c)
                     self.lastActive = datetime.now()
+                    phenny.say(STRINGS['DRAWS'] % nickk)
                     self.drawn = True
 
-                elif self.drawn is True:
-                    print "No matching card drawn, passing..."
-                    break
 
         if self.drawn is False:
             self.players[self.playerOrder[self.currentPlayer]].remove(playcard)
             if playcard[0] == 'W':
                 playcard = playcard + wild_color
             phenny.say(STRINGS['UNOBOT_PLAYED'] % (nickk, self.renderCards(None, playcard, 1)))
+            # Check if unobot has uno or won
+            if len(self.players[self.playerOrder[self.currentPlayer]]) == 1:
+                phenny.msg(CHANNEL, STRINGS['UNO'] % self.playerOrder[self.currentPlayer])
+            elif len(self.players[self.playerOrder[self.currentPlayer]]) == 0:
+                phenny.msg(CHANNEL, STRINGS['WIN'] % (self.playerOrder[self.currentPlayer], (datetime.now() - self.startTime)))
+                self.gameEnded(phenny, self.playerOrder[self.currentPlayer])
+                return
             self.incPlayer()
             self.cardPlayed(phenny, playcard)
         elif self.drawn is True:
             self.incPlayer()
-            phenny.say(STRINGS['DRAWS'] % nickk)
-            time.sleep(0.75)
             phenny.say('%s passes to %s.' % (nickk, self.playerOrder[self.currentPlayer]))
         self.drawn = False
         self.showOnTurn(phenny)
@@ -606,18 +613,20 @@ class UnoBot:
     def gameEnded(self, phenny, winner):
         try:
             score = 0
-            for p in self.players:
-                for c in self.players[p]:
-                    if c[0] == 'W':
-                        score += self.special_scores[c]
-                    elif c[1] in [ 'S', 'R', 'D' ]:
-                        score += self.special_scores[c[1:]]
+            for player_nick, cards in self.players.iteritems():               
+                for card in cards:
+                    if card[0] == 'W':
+                        score += self.special_scores[card]
+                    elif card[1] in [ 'S', 'R', 'D' ]:
+                        score += self.special_scores[card[1:]]
                     else:
-                        score += int(c[1])
+                        score += int(card[1])
+                if cards:
+                    phenny.msg(CHANNEL, '%s held: %s' % (player_nick, self.renderCards(player_nick, cards, 1)))
             phenny.msg(CHANNEL, STRINGS['GAINS'] % (winner, score))
             self.saveScores(self.players.keys(), winner, score, (datetime.now() - self.startTime).seconds)
         except Exception, e:
-            print 'Score error: %s' % e
+            print 'Score error: %s' % e            
         self.players = dict()
         self.playerOrder = list()
         self.game_on = False

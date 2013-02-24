@@ -186,6 +186,10 @@ class Phenny(irc.Bot):
             s.weather_API = self.config.wunderground_key
             s.rottentomatoes_API = self.config.rottentomatoes_key
             s.rottentomatoes_API_version = self.config.rottentomatoes_version
+            s.twitter_consumer_key = self.config.consumer_key
+            s.twitter_consumer_secret = self.config.consumer_secret
+            s.twitter_access_token_key = self.config.access_token_key
+            s.twitter_access_token_secret = self.config.access_token_secret
             return s
 
       return CommandInput(text, origin, bytes, match, event, args)

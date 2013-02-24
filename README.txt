@@ -15,5 +15,6 @@ Updates:
 
 Additional dependencies (folders can be unzipped and placed in root phenny file):
 * simplejson
-* geopy - weather.py
+* geopy - wunderground.py
 * twisted - telnet.py
+* python-twitter - url.py
