@@ -82,7 +82,8 @@ class Phenny(irc.Bot):
       self.commands = {'high': {}, 'medium': {}, 'low': {}}
       
       def bind(self, priority, regexp, func): 
-         print priority, regexp.pattern.encode('utf-8'), func
+         # DISABLED: print statement causing random IOError
+         # print priority, regexp.pattern.encode('utf-8'), func
          # register documentation
          if not hasattr(func, 'name'): 
             func.name = func.__name__

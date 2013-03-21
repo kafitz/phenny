@@ -5,8 +5,7 @@ Simple installation:
 
 -- 
 Sean B. Palmer, http://inamidst.com/sbp/
-Kyle Fitzsimmons, http://kylefitz.com
-
+Kyle Fitzsimmons, http://kylefitz.com/
 
 Updates:
  * added rottentomatoes module

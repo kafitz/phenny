@@ -8,7 +8,7 @@ http://inamidst.com/phenny/
 def slap(phenny, input):
 	for channel in phenny.channels:
 		if input.sender in channel.split(" ", 1):
-			if input.nick.lower() == '01010101':
+			if input.nick.lower() == '101010101':
 				output_message = "slaps " + input.nick + "!"
 				phenny.me(output_message)
 	return

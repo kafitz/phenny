@@ -403,6 +403,8 @@ class UnoBot:
                 coin_flip = random.random()
                 if coin_flip < 0.6: # Play by number
                     print "Coin flip: play by number"
+                    # Sort through whole care list to match number
+                    random.shuffle(card_list)
                     for card in card_list:
                         if card[1:] == tc_number:
                             playcard = card
@@ -411,12 +413,14 @@ class UnoBot:
                     break
                 else: # Play by color
                     print "Coin flip: play by color"
-                    playcard = self.chooseHighestColorCard(phenny, search_list)
+                    random.shuffle(search_list)
+                    playcard = search_list[0]
                     self.drawn = False
                     break
             elif color_matches == True and number_matches == False:
                 print "Color match: ", color_matches, "/ Number match: ", number_matches
-                playcard = self.chooseHighestColorCard(phenny, search_list)
+                random.shuffle(search_list)
+                playcard = search_list[0]
                 self.drawn = False
                 break
             elif color_matches == False and number_matches == True:
@@ -478,26 +482,6 @@ class UnoBot:
         self.drawn = False
         self.showOnTurn(phenny)
 
-    def chooseHighestColorCard(self, phenny, color_list):
-        '''Choose the highest digit card from a specific color suite, then wild if 
-            doesn't exist, lastly draw'''
-        card_list = sorted(color_list)
-        index = -1
-        # If no matching cards exist in hand, draw
-        if len(card_list) == 0:
-            c = self.getCard(phenny)
-            self.players[self.playerOrder[self.currentPlayer]].append(c)
-            self.lastActive = datetime.now()
-            return
-        # Search for highest number card in the list (iterates sorted list in reverse)
-        for card in range(0, len(card_list)):
-            last_card = card_list[index]
-            last_card_number = last_card[1:]
-            if last_card_number.isdigit():
-                return last_card
-                index += -1
-        # If a card without a number exists in the list, then play a special card (returns last card in list)
-        return random.choice(card_list)
 
     def whichColors(self, blues, greens, reds, yellows, tc_color):
         if tc_color == "B":
